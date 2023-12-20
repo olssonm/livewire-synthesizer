@@ -13,22 +13,24 @@ class GenericSynthesizer extends Synth
         return $target instanceof static::$class;
     }
 
-    public function dehydrate($target)
+    public function dehydrate($target, $dehydrateCallback)
     {
         $data = [];
         foreach ($target->toArray() as $key => $value) {
-            $data[$key] = $value;
+            $data[$key] = $dehydrateCallback($key, $value);
         }
 
-        return [$data, []];
+        return [$data, [
+            'class' => static::$class,
+        ]];
     }
 
-    public function hydrate($value)
+    public function hydrate($value, $meta, $hydrateCallback)
     {
-        $instance = new static::$class;
+        $instance = new $meta['class']();
 
         foreach ($value as $key => $value) {
-            $instance->{$key} = $value;
+            $instance->{$key} = $hydrateCallback($key, $value);
         }
 
         return $instance;
